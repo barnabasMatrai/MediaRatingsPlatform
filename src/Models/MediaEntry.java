@@ -1,20 +1,27 @@
 package Models;
 
+import java.util.Set;
+
 public class MediaEntry {
-    enum MediaType {
+    private enum MediaType {
         MOVIE,
         SERIES,
         GAME
     }
 
+    private enum Genre {
+        ACTION,
+        DRAMA,
+        HORROR,
+        COMEDY
+    }
+
+    private String createdBy;
     private String title;
     private String description;
     private MediaType mediaType;
     private int releaseYear;
-    private String[] genres;
+    private Genre[] genres;
     private int ageRestriction;
-    private int[] ratings;
-    private double averageScore;
-
-    private String createdBy;
+    private Set<Rating> ratings;
 }
