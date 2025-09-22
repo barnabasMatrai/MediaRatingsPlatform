@@ -1,4 +1,4 @@
-package Contexts;
+package handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -8,19 +8,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import java.sql.*;
-import java.util.Properties;
-
 public abstract class Handler implements HttpHandler {
-    protected static Connection getConnection() throws SQLException {
-        final String url = "jdbc:postgresql://<node ip address>:5432,<node ip address>:5432/postgres?targetServerType=primary";
-        final Properties props = new Properties();
-        props.setProperty("user", "postgresql");
-        props.setProperty("password", "password");
-
-        return DriverManager.getConnection(url, props);
-    }
-
     protected static void sendResponse(HttpExchange exchange, String response) throws IOException {
         exchange.sendResponseHeaders(200, response.getBytes().length);
         try (OutputStream os = exchange.getResponseBody()) {

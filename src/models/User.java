@@ -1,8 +1,9 @@
-package Models;
+package models;
 
 import java.util.Set;
 
 public class User {
+    private int userId;
     private UserProfile userProfile;
 
     private Set<MediaEntry> mediaEntries;
