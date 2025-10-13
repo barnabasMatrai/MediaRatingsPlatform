@@ -11,6 +11,7 @@ public class UserProfile implements Serializable {
     private String lastName;
     private String favoriteGenre;
 
+    public UserProfile() {}
     public UserProfile(String username, String password, String email, String firstName, String lastName) {
         this.username = username;
         this.password = password;
@@ -18,5 +19,21 @@ public class UserProfile implements Serializable {
         this.firstName = firstName;
         this.lastName = lastName;
         this.favoriteGenre = null;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

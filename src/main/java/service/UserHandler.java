@@ -31,40 +31,40 @@ public class UserHandler implements HttpHandler {
             List<String> pathParts = request.getPathParts();
 
             if (requestMethod.equals(Method.GET.name())) {
-                if (pathParts.size() == 3) {
-                    String requestedData = request.getPathParts().get(2);
+                if (pathParts.size() == 4) {
+                    String requestedData = request.getPathParts().get(3);
                     if (requestedData.equals("profile")) {
-                        response = this.userController.getProfile(request.getPathParts().get(1));
+                        response = this.userController.getProfile(request.getPathParts().get(2));
                     } else if (requestedData.equals("ratings")) {
-                        response = this.userController.getRatings(request.getPathParts().get(1));
+                        response = this.userController.getRatings(request.getPathParts().get(2));
                     } else if (requestedData.equals("favorites")) {
-                        response = this.userController.getFavorites(request.getPathParts().get(1));
+                        response = this.userController.getFavorites(request.getPathParts().get(2));
                     } else if (requestedData.equals("recommendations")) {
                         String params = request.getParams();
                         if (params.equals("type=genre")) {
-                            response = this.userController.getRecommendationsByGenre(request.getPathParts().get(1));
+                            response = this.userController.getRecommendationsByGenre(request.getPathParts().get(2));
                         } else if (params.equals("type=content")) {
-                            response = this.userController.getRecommendationsByContent(request.getPathParts().get(1));
+                            response = this.userController.getRecommendationsByContent(request.getPathParts().get(2));
                         }
                     }
                 } else {
                     //response = this.userController.getWeather();
                 }
             } else if (requestMethod.equals(Method.POST.name())) {
-                if (pathParts.size() == 2) {
-                    if (pathParts.get(1).equals("register")) {
+                if (pathParts.size() == 3) {
+                    if (pathParts.get(2).equals("register")) {
                         response = this.userController.register(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
                     }
-                    else if (pathParts.get(1).equals("login")) {
+                    else if (pathParts.get(2).equals("login")) {
                         response = this.userController.login(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
                     }
                 }
                 //response = this.userController.addWeather(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
             } else if (requestMethod.equals(Method.PUT.name())) {
-                if (pathParts.size() == 3) {
-                    String requestedData = request.getPathParts().get(2);
+                if (pathParts.size() == 4) {
+                    String requestedData = request.getPathParts().get(3);
                     if (requestedData.equals("profile")) {
-                        response = this.userController.updateProfile(request.getPathParts().get(1), IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
+                        response = this.userController.updateProfile(request.getPathParts().get(2), IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
                     }
                 }
 

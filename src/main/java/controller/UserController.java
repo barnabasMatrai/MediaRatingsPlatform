@@ -138,7 +138,8 @@ public class UserController extends Controller {
     public Response register(String requestBody)
     {
         try {
-            User user = this.getObjectMapper().readValue(requestBody, User.class);
+            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
+            User user = new User(userProfile);
             userRepository.add(user);
 
             return new Response(

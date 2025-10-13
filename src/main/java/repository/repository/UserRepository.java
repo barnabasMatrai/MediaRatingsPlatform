@@ -20,8 +20,6 @@ public class UserRepository {
     public UserRepository()
     {
         this.userData = new ArrayList<>();
-        this.userData.add(new User(new UserProfile("terry", "someone", "terry@mail.com", "Terry", "Bryce")));
-        this.userData.add(new User(new UserProfile("maus", "man", "maus@mail.com", "Maus", "Person")));
     }
 
     public User get(long id) {
