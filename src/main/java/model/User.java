@@ -26,4 +26,8 @@ public class User implements IModel {
     public Set<Rating> getRatings() {
         return ratings;
     }
+
+    public Set<MediaEntry> getFavorites() {
+        return favorites;
+    }
 }

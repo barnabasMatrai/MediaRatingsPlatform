@@ -10,23 +10,16 @@ public class MediaEntry implements IModel {
         GAME
     }
 
-    private enum Genre {
-        ACTION,
-        DRAMA,
-        HORROR,
-        COMEDY
-    }
-
     private String createdBy;
     private String title;
     private String description;
     private MediaType mediaType;
     private int releaseYear;
-    private Genre[] genres;
+    private String[] genres;
     private int ageRestriction;
     private Set<Rating> ratings;
 
-    public MediaEntry(String createdBy, String title, String description, MediaType mediaType, int releaseYear, Genre[] genres, int ageRestriction) {
+    public MediaEntry(String createdBy, String title, String description, MediaType mediaType, int releaseYear, String[] genres, int ageRestriction) {
         this.createdBy = createdBy;
         this.title = title;
         this.description = description;

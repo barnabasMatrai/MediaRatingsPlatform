@@ -2,6 +2,7 @@ package controller;
 
 import jdk.jshell.spi.ExecutionControl;
 import model.User;
+import model.UserProfile;
 import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
@@ -108,6 +109,18 @@ public class UserController extends Controller {
         }
     }
 
+    public Response getRecommendationsByGenre(String id) {
+        // TODO
+        System.out.println("getRecommendationsByGenre");
+        return null;
+    }
+
+    public Response getRecommendationsByContent(String id) {
+        // TODO
+        System.out.println("getRecommendationsByGenre");
+        return null;
+    }
+
     public User getUser(String id) {
         long parsedId;
 
@@ -166,5 +179,38 @@ public class UserController extends Controller {
                 ContentType.JSON,
                 "{ \"message\" : \"Internal Server Error\" }"
         );
+    }
+
+    // PUT /users/id:/profile
+    public Response updateProfile(String id, String requestBody)
+    {
+        User user = getUser(id);
+
+        if (user == null) {
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.JSON,
+                    "{ \"message\" : \"User with id " + id + " not found.\" }"
+            );
+        }
+
+        try {
+            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
+
+            this.getObjectMapper().updateValue(user.getUserProfile(), userProfile);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Profile of user with id " + id + " has been updated.\" }"
+            );
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        }
     }
 }

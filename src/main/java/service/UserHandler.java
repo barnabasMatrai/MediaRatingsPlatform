@@ -39,6 +39,13 @@ public class UserHandler implements HttpHandler {
                         response = this.userController.getRatings(request.getPathParts().get(1));
                     } else if (requestedData.equals("favorites")) {
                         response = this.userController.getFavorites(request.getPathParts().get(1));
+                    } else if (requestedData.equals("recommendations")) {
+                        String params = request.getParams();
+                        if (params.equals("type=genre")) {
+                            response = this.userController.getRecommendationsByGenre(request.getPathParts().get(1));
+                        } else if (params.equals("type=content")) {
+                            response = this.userController.getRecommendationsByContent(request.getPathParts().get(1));
+                        }
                     }
                 } else {
                     //response = this.userController.getWeather();
@@ -57,7 +64,7 @@ public class UserHandler implements HttpHandler {
                 if (pathParts.size() == 3) {
                     String requestedData = request.getPathParts().get(2);
                     if (requestedData.equals("profile")) {
-//                        response = this.userController.updateProfile();
+                        response = this.userController.updateProfile(request.getPathParts().get(1), IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
                     }
                 }
 

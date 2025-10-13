@@ -9,6 +9,7 @@ public class UserProfile implements Serializable {
     private String email;
     private String firstName;
     private String lastName;
+    private String favoriteGenre;
 
     public UserProfile(String username, String password, String email, String firstName, String lastName) {
         this.username = username;
@@ -16,5 +17,6 @@ public class UserProfile implements Serializable {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.favoriteGenre = null;
     }
 }
