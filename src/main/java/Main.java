@@ -1,10 +1,4 @@
-import handlers.UserHandler;
-import repositories.IUserRepository;
-import repositories.UserRepository;
 import restserver.server.Server;
-import services.IUserService;
-import services.UserService;
-import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
