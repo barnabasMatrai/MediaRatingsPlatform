@@ -153,7 +153,7 @@ public class UserService extends ICanMapObjects implements IUserService {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
                         ContentType.JSON,
-                        "{ message: \" User with username exists already! \" }"
+                        "{ message: \"User with username exists already! \" }"
                 );
             }
 
