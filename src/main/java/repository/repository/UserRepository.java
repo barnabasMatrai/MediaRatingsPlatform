@@ -6,11 +6,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserRepository implements IUserRepository {
+    private static UserRepository instance = null;
     private List<User> userData;
 
-    public UserRepository()
+    private UserRepository()
     {
         this.userData = new ArrayList<>();
+    }
+
+    public static UserRepository getInstance() {
+        if (instance == null) {
+            instance = new UserRepository();
+        }
+
+        return instance;
     }
 
     @Override

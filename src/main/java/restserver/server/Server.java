@@ -14,8 +14,8 @@ public class Server {
     public void start() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 10);
 
-        IUserRepository userRepository = new UserRepository();
-        IUserController userController = new UserController(userRepository);
+        IUserRepository userRepository = UserRepository.getInstance();
+        IUserController userController = UserController.getInstance(userRepository);
         server.createContext("/api/users", new UserHandler(userController));
 
         server.start();

@@ -6,15 +6,22 @@ import repository.repository.IUserRepository;
 import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
-import repository.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import service.AuthenticationService;
 
 public class UserController extends Controller implements IUserController {
+    private static UserController instance = null;
     private IUserRepository userRepository;
 
-    public UserController(IUserRepository userRepository) {
+    private UserController(IUserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public static UserController getInstance(IUserRepository userRepository) {
+        if (instance == null) {
+            instance = new UserController(userRepository);
+        }
+        return instance;
     }
 
     // GET /users/:id/profile
