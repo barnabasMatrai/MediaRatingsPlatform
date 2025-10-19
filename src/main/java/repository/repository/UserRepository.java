@@ -1,21 +1,12 @@
 package repository.repository;
 
 import model.User;
-import model.UserProfile;
-import repository.DataAccessException;
-import repository.UnitOfWork;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class UserRepository {
     private List<User> userData;
-//    private UnitOfWork unitOfWork;
 
     public UserRepository()
     {
