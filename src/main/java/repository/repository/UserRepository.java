@@ -31,6 +31,14 @@ public class UserRepository {
         return user;
     }
 
+    public User get(String username) {
+
+        return userData.stream()
+                .filter(u -> u.getUserProfile().getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
+    }
+
     public void add(User user) {
         userData.add(user);
     }
