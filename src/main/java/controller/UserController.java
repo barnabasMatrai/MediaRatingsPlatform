@@ -8,6 +8,7 @@ import restserver.http.HttpStatus;
 import restserver.server.Response;
 import repository.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import service.AuthenticationService;
 
 import java.util.Collection;
 import java.util.List;
@@ -162,14 +163,23 @@ public class UserController extends Controller {
     public Response login(String requestBody)
     {
         try {
-            User user = this.getObjectMapper().readValue(requestBody, User.class);
-            // add login logic
-            // this.userRepository.addUser(user);
+            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
+            User user = new User(userProfile);
+            String username = user.getUserProfile().getUsername();
+            User existingUser = userRepository.get(username);
+
+            if (existingUser == null || !existingUser.getUserProfile().getPassword().equals(user.getUserProfile().getPassword())) {
+                return new Response(
+                        HttpStatus.NOT_FOUND,
+                        ContentType.JSON,
+                        "{ \"message\" : \"Invalid credentials!\" }"
+                );
+            }
 
             return new Response(
                     HttpStatus.CREATED,
                     ContentType.JSON,
-                    "{ message: \"Success\" }"
+                    AuthenticationService.getInstance().generateToken()
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
