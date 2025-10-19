@@ -1,16 +1,16 @@
 package service;
 
-import controller.UserController;
+import controller.IUserController;
 import restserver.server.Request;
 import restserver.server.Response;
 
 import java.util.List;
 
 public class UserHandler extends Handler {
-    private final UserController userController;
+    private final IUserController userController;
 
-    public UserHandler() {
-        this.userController = new UserController();
+    public UserHandler(IUserController userController) {
+        this.userController = userController;
     }
 
     @Override

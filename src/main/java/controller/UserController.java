@@ -2,6 +2,7 @@ package controller;
 
 import model.User;
 import model.UserProfile;
+import repository.repository.IUserRepository;
 import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
@@ -10,11 +11,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import service.AuthenticationService;
 
 public class UserController extends Controller implements IUserController {
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 
-    public UserController() {
-
-        this.userRepository = new UserRepository();
+    public UserController(IUserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     // GET /users/:id/profile
