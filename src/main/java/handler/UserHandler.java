@@ -1,15 +1,15 @@
-package service;
+package handler;
 
-import controller.IUserController;
+import service.IUserService;
 import restserver.server.Request;
 import restserver.server.Response;
 
 import java.util.List;
 
 public class UserHandler extends Handler {
-    private final IUserController userController;
+    private final IUserService userController;
 
-    public UserHandler(IUserController userController) {
+    public UserHandler(IUserService userController) {
         this.userController = userController;
     }
 

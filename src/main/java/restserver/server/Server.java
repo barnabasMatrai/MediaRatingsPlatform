@@ -1,11 +1,11 @@
 package restserver.server;
 
 import com.sun.net.httpserver.HttpServer;
-import controller.IUserController;
-import controller.UserController;
+import service.IUserService;
+import service.UserService;
 import repository.repository.IUserRepository;
 import repository.repository.UserRepository;
-import service.UserHandler;
+import handler.UserHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,7 +15,7 @@ public class Server {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 10);
 
         IUserRepository userRepository = UserRepository.getInstance();
-        IUserController userController = UserController.getInstance(userRepository);
+        IUserService userController = UserService.getInstance(userRepository);
         server.createContext("/api/users", new UserHandler(userController));
 
         server.start();

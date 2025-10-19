@@ -1,9 +1,9 @@
-package controller;
+package service;
 
 import model.User;
 import restserver.server.Response;
 
-public interface IUserController {
+public interface IUserService {
     Response getProfile(String id);
     Response getRatings(String id);
     Response getFavorites(String id);

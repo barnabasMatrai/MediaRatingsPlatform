@@ -1,4 +1,4 @@
-package controller;
+package service;
 
 import model.User;
 import model.UserProfile;
@@ -7,19 +7,18 @@ import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import service.AuthenticationService;
 
-public class UserController extends Controller implements IUserController {
-    private static UserController instance = null;
+public class UserService extends ICanMapObjects implements IUserService {
+    private static UserService instance = null;
     private IUserRepository userRepository;
 
-    private UserController(IUserRepository userRepository) {
+    private UserService(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public static UserController getInstance(IUserRepository userRepository) {
+    public static UserService getInstance(IUserRepository userRepository) {
         if (instance == null) {
-            instance = new UserController(userRepository);
+            instance = new UserService(userRepository);
         }
         return instance;
     }

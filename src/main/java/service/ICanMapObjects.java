@@ -1,11 +1,11 @@
-package controller;
+package service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Controller {
+public class ICanMapObjects {
     private ObjectMapper objectMapper;
 
-    public Controller() {
+    public ICanMapObjects() {
         this.objectMapper = new ObjectMapper();
     }
 
