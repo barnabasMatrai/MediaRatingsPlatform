@@ -1,17 +1,9 @@
 package service;
 
 import controller.UserController;
-import restserver.http.ContentType;
-import restserver.http.HttpStatus;
-import restserver.http.Method;
 import restserver.server.Request;
 import restserver.server.Response;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class UserHandler extends Handler {
