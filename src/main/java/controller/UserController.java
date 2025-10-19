@@ -1,6 +1,5 @@
 package controller;
 
-import jdk.jshell.spi.ExecutionControl;
 import model.User;
 import model.UserProfile;
 import restserver.http.ContentType;
@@ -9,9 +8,6 @@ import restserver.server.Response;
 import repository.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import service.AuthenticationService;
-
-import java.util.Collection;
-import java.util.List;
 
 public class UserController extends Controller {
     private UserRepository userRepository;
