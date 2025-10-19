@@ -156,7 +156,7 @@ public class UserController extends Controller implements IUserController {
             return new Response(
                     HttpStatus.CREATED,
                     ContentType.JSON,
-                    "{ message: \"Success\" }"
+                    "{ message: \"Successfully registered user " + user.getUserProfile().getUsername() + "\" }"
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
