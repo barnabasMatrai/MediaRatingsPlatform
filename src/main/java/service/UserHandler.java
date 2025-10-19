@@ -25,62 +25,84 @@ public class UserHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) {
         try {
             Request request = new Request(httpExchange.getRequestURI());
-            Response response = null;
+            String method = httpExchange.getRequestMethod();
+            List<String> path = request.getPathParts();
 
-            String requestMethod = httpExchange.getRequestMethod();
-            List<String> pathParts = request.getPathParts();
-
-            if (requestMethod.equals(Method.GET.name())) {
-                if (pathParts.size() == 4) {
-                    String requestedData = request.getPathParts().get(3);
-                    if (requestedData.equals("profile")) {
-                        response = this.userController.getProfile(request.getPathParts().get(2));
-                    } else if (requestedData.equals("ratings")) {
-                        response = this.userController.getRatings(request.getPathParts().get(2));
-                    } else if (requestedData.equals("favorites")) {
-                        response = this.userController.getFavorites(request.getPathParts().get(2));
-                    } else if (requestedData.equals("recommendations")) {
-                        String params = request.getParams();
-                        if (params.equals("type=genre")) {
-                            response = this.userController.getRecommendationsByGenre(request.getPathParts().get(2));
-                        } else if (params.equals("type=content")) {
-                            response = this.userController.getRecommendationsByContent(request.getPathParts().get(2));
-                        }
-                    }
-                } else {
-                    //response = this.userController.getWeather();
-                }
-            } else if (requestMethod.equals(Method.POST.name())) {
-                if (pathParts.size() == 3) {
-                    if (pathParts.get(2).equals("register")) {
-                        response = this.userController.register(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
-                    }
-                    else if (pathParts.get(2).equals("login")) {
-                        response = this.userController.login(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
-                    }
-                }
-                //response = this.userController.addWeather(IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
-            } else if (requestMethod.equals(Method.PUT.name())) {
-                if (pathParts.size() == 4) {
-                    String requestedData = request.getPathParts().get(3);
-                    if (requestedData.equals("profile")) {
-                        response = this.userController.updateProfile(request.getPathParts().get(2), IOUtils.toString(httpExchange.getRequestBody(), StandardCharsets.UTF_8));
-                    }
-                }
-
-            } else if (requestMethod.equals(Method.DELETE.name())) {
-
-            } else {
-                response = new Response(
-                        HttpStatus.BAD_REQUEST,
-                        ContentType.JSON,
-                        "[]"
-                );
-            }
-
+            Response response = routeRequest(method, path, httpExchange, request);
             response.send(httpExchange);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Response routeRequest(String method, List<String> path, HttpExchange exchange, Request request) throws IOException {
+        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
+
+        if (method.equals(Method.GET.name())) {
+            return handleGet(path, request);
+        } else if (method.equals(Method.POST.name())) {
+            return handlePost(path, body);
+        } else if (method.equals(Method.PUT.name())) {
+            return handlePut(path, body);
+        }  else if (method.equals(Method.DELETE.name())) {
+            return handleDelete(path);
+        }
+
+        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
+    }
+
+    private Response handleGet(List<String> path, Request request) {
+        if (path.size() < 4) return badRequest();
+
+        String userId = path.get(2);
+        String target = path.get(3);
+
+        return switch (target) {
+            case "profile" -> userController.getProfile(userId);
+            case "ratings" -> userController.getRatings(userId);
+            case "favorites" -> userController.getFavorites(userId);
+            case "recommendations" -> handleRecommendations(request, userId);
+            default -> badRequest();
+        };
+    }
+
+    private Response handleRecommendations(Request request, String userId) {
+        String params = request.getParams();
+        return switch (params) {
+            case "type=genre" -> userController.getRecommendationsByGenre(userId);
+            case "type=content" -> userController.getRecommendationsByContent(userId);
+            default -> badRequest();
+        };
+    }
+
+    private Response handlePost(List<String> path, String body) {
+        if (path.size() < 3) return badRequest();
+
+        return switch (path.get(2)) {
+            case "register" -> userController.register(body);
+            case "login" -> userController.login(body);
+            default -> badRequest();
+        };
+    }
+
+    private Response handlePut(List<String> path, String body) {
+        if (path.size() < 4) return badRequest();
+
+        String userId = path.get(2);
+        String target = path.get(3);
+
+        return switch (target) {
+            case "profile" -> userController.updateProfile(userId, body);
+            default -> badRequest();
+        };
+    }
+
+    private Response handleDelete(List<String> path) {
+        return badRequest(); // placeholder
+    }
+
+    private Response badRequest() {
+        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
     }
 }
