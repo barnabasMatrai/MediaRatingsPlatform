@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class UserHandler implements HttpHandler {
+public class UserHandler extends Handler {
     private final UserController userController;
 
     public UserHandler() {
@@ -22,37 +22,7 @@ public class UserHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange httpExchange) {
-        try {
-            Request request = new Request(httpExchange.getRequestURI());
-            String method = httpExchange.getRequestMethod();
-            List<String> path = request.getPathParts();
-
-            Response response = routeRequest(method, path, httpExchange, request);
-            response.send(httpExchange);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Response routeRequest(String method, List<String> path, HttpExchange exchange, Request request) throws IOException {
-        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-
-        if (method.equals(Method.GET.name())) {
-            return handleGet(path, request);
-        } else if (method.equals(Method.POST.name())) {
-            return handlePost(path, body);
-        } else if (method.equals(Method.PUT.name())) {
-            return handlePut(path, body);
-        }  else if (method.equals(Method.DELETE.name())) {
-            return handleDelete(path);
-        }
-
-        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
-    }
-
-    private Response handleGet(List<String> path, Request request) {
+    protected Response handleGet(List<String> path, Request request) {
         if (path.size() < 4) return badRequest();
 
         String userId = path.get(2);
@@ -76,7 +46,8 @@ public class UserHandler implements HttpHandler {
         };
     }
 
-    private Response handlePost(List<String> path, String body) {
+    @Override
+    protected Response handlePost(List<String> path, String body) {
         if (path.size() < 3) return badRequest();
 
         return switch (path.get(2)) {
@@ -86,7 +57,8 @@ public class UserHandler implements HttpHandler {
         };
     }
 
-    private Response handlePut(List<String> path, String body) {
+    @Override
+    protected Response handlePut(List<String> path, String body) {
         if (path.size() < 4) return badRequest();
 
         String userId = path.get(2);
@@ -98,11 +70,8 @@ public class UserHandler implements HttpHandler {
         };
     }
 
-    private Response handleDelete(List<String> path) {
+    @Override
+    protected Response handleDelete(List<String> path) {
         return badRequest(); // placeholder
-    }
-
-    private Response badRequest() {
-        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
     }
 }
