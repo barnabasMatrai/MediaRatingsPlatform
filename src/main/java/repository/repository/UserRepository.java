@@ -5,7 +5,7 @@ import model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserRepository {
+public class UserRepository implements IUserRepository {
     private List<User> userData;
 
     public UserRepository()
@@ -13,6 +13,7 @@ public class UserRepository {
         this.userData = new ArrayList<>();
     }
 
+    @Override
     public User get(long id) {
         User user = userData.stream()
                 .filter(u -> u.getId() == id)
@@ -22,6 +23,7 @@ public class UserRepository {
         return user;
     }
 
+    @Override
     public User get(String username) {
 
         return userData.stream()
@@ -30,6 +32,7 @@ public class UserRepository {
                 .orElse(null);
     }
 
+    @Override
     public void add(User user) {
         userData.add(user);
     }
