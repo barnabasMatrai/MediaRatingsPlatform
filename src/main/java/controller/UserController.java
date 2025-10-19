@@ -9,7 +9,7 @@ import repository.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import service.AuthenticationService;
 
-public class UserController extends Controller {
+public class UserController extends Controller implements IUserController {
     private UserRepository userRepository;
 
     public UserController() {
@@ -18,6 +18,7 @@ public class UserController extends Controller {
     }
 
     // GET /users/:id/profile
+    @Override
     public Response getProfile(String id) {
         User user = getUser(id);
 
@@ -48,6 +49,7 @@ public class UserController extends Controller {
     }
 
     // GET /users/:id/profile
+    @Override
     public Response getRatings(String id) {
         User user = getUser(id);
 
@@ -77,6 +79,7 @@ public class UserController extends Controller {
         }
     }
 
+    @Override
     public Response getFavorites(String id) {
         User user = getUser(id);
 
@@ -106,18 +109,21 @@ public class UserController extends Controller {
         }
     }
 
+    @Override
     public Response getRecommendationsByGenre(String id) {
         // TODO
         System.out.println("getRecommendationsByGenre");
         return null;
     }
 
+    @Override
     public Response getRecommendationsByContent(String id) {
         // TODO
         System.out.println("getRecommendationsByGenre");
         return null;
     }
 
+    @Override
     public User getUser(String id) {
         long parsedId;
 
@@ -132,6 +138,7 @@ public class UserController extends Controller {
     }
 
     // POST /users/register
+    @Override
     public Response register(String requestBody)
     {
         try {
@@ -156,6 +163,7 @@ public class UserController extends Controller {
     }
 
     // POST /users/login
+    @Override
     public Response login(String requestBody)
     {
         try {
@@ -189,6 +197,7 @@ public class UserController extends Controller {
     }
 
     // PUT /users/id:/profile
+    @Override
     public Response updateProfile(String id, String requestBody)
     {
         User user = getUser(id);
