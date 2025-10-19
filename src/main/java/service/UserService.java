@@ -149,6 +149,14 @@ public class UserService extends ICanMapObjects implements IUserService {
     {
         try {
             UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
+            if (userRepository.get(userProfile.getUsername()) != null) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ message: \" User with username exists already! \" }"
+                );
+            }
+
             User user = new User(userProfile);
             userRepository.add(user);
 
