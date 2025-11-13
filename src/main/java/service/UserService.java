@@ -1,7 +1,7 @@
 package service;
 
 import model.User;
-import model.UserProfile;
+import repository.DataAccessException;
 import repository.repository.IUserRepository;
 import restserver.http.ContentType;
 import restserver.http.HttpStatus;
@@ -37,12 +37,12 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
 
         try {
-            String userProfileJSON = this.getObjectMapper().writeValueAsString(user.getUserProfile());
+            String userJSON = this.getObjectMapper().writeValueAsString(user);
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userProfileJSON
+                    userJSON
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -68,12 +68,12 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
 
         try {
-            String userProfileJSON = this.getObjectMapper().writeValueAsString(user.getRatings());
+            String userJSON = this.getObjectMapper().writeValueAsString(user.getRatings());
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userProfileJSON
+                    userJSON
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -98,12 +98,12 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
 
         try {
-            String userProfileJSON = this.getObjectMapper().writeValueAsString(user.getFavorites());
+            String userJSON = this.getObjectMapper().writeValueAsString(user.getFavorites());
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userProfileJSON
+                    userJSON
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -148,8 +148,8 @@ public class UserService extends ICanMapObjects implements IUserService {
     public Response register(String requestBody)
     {
         try {
-            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
-            if (userRepository.get(userProfile.getUsername()) != null) {
+            User user = this.getObjectMapper().readValue(requestBody, User.class);
+            if (userRepository.get(user.getUsername()) != null) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
                         ContentType.JSON,
@@ -157,23 +157,30 @@ public class UserService extends ICanMapObjects implements IUserService {
                 );
             }
 
-            User user = new User(userProfile);
             userRepository.add(user);
 
             return new Response(
                     HttpStatus.CREATED,
                     ContentType.JSON,
-                    "{ message: \"Successfully registered user " + user.getUserProfile().getUsername() + "\" }"
+                    "{ message: \"Successfully registered user " + user.getUsername() + "\" }"
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-        }
 
-        return new Response(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ContentType.JSON,
-                "{ \"message\" : \"Internal Server Error\" }"
-        );
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
     }
 
     // POST /users/login
@@ -181,12 +188,11 @@ public class UserService extends ICanMapObjects implements IUserService {
     public Response login(String requestBody)
     {
         try {
-            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
-            User user = new User(userProfile);
-            String username = user.getUserProfile().getUsername();
+            User user = this.getObjectMapper().readValue(requestBody, User.class);
+            String username = user.getUsername();
             User existingUser = userRepository.get(username);
 
-            if (existingUser == null || !existingUser.getUserProfile().getPassword().equals(user.getUserProfile().getPassword())) {
+            if (existingUser == null || !existingUser.getPassword().equals(user.getPassword())) {
                 return new Response(
                         HttpStatus.NOT_FOUND,
                         ContentType.JSON,
@@ -214,9 +220,9 @@ public class UserService extends ICanMapObjects implements IUserService {
     @Override
     public Response updateProfile(String id, String requestBody)
     {
-        User user = getUser(id);
+        User existingUser = getUser(id);
 
-        if (user == null) {
+        if (existingUser == null) {
             return new Response(
                     HttpStatus.NOT_FOUND,
                     ContentType.JSON,
@@ -225,14 +231,14 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
 
         try {
-            UserProfile userProfile = this.getObjectMapper().readValue(requestBody, UserProfile.class);
+            User updatedUser = this.getObjectMapper().readValue(requestBody, User.class);
 
-            this.getObjectMapper().updateValue(user.getUserProfile(), userProfile);
+            this.getObjectMapper().updateValue(existingUser, updatedUser);
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    "{ \"message\" : \"Profile of user with id " + id + " has been updated.\" }"
+                    "{ \"message\" : \"User with id " + id + " has been updated.\" }"
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
