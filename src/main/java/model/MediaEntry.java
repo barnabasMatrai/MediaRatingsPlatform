@@ -3,7 +3,6 @@ package model;
 import java.util.Set;
 
 public class MediaEntry implements IModel {
-    private int id;
     private enum MediaType {
         MOVIE,
         SERIES,

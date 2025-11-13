@@ -3,7 +3,6 @@ package model;
 import java.sql.Timestamp;
 
 public class Rating implements IModel {
-    private int id;
     private enum StarValue {
         WORST,
         BAD,
