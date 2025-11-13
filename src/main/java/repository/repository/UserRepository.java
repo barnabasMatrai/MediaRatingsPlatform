@@ -93,7 +93,29 @@ public class UserRepository implements IUserRepository {
 
             unitOfWork.commitTransaction();
         } catch (SQLException e) {
+            unitOfWork.rollbackTransaction();
             throw new DataAccessException("Insert unsuccessful", e);
         }
+    }
+
+    @Override
+    public User update(long id, User user) {
+        UnitOfWork unitOfWork = new UnitOfWork();
+        try (PreparedStatement preparedStatement = unitOfWork.prepareStatement(
+                """
+                UPDATE users
+                SET email = ?, favoritegenre = ?
+                WHERE id = ?;
+                """)) {
+            preparedStatement.setString(1, user.getEmail());
+            preparedStatement.setString(2, user.getFavoriteGenre());
+            preparedStatement.setLong(3, id);
+            preparedStatement.executeUpdate();
+            unitOfWork.commitTransaction();
+        } catch (SQLException e) {
+            unitOfWork.rollbackTransaction();
+            throw new DataAccessException("Problem with updating user.", e);
+        }
+        return null;
     }
 }

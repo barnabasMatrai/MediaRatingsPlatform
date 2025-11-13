@@ -54,7 +54,7 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
     }
 
-    // GET /users/:id/profile
+    // GET /users/:id/ratings
     @Override
     public Response getRatings(String id) {
         User user = getUser(id);
@@ -85,6 +85,7 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
     }
 
+    // GET /users/:id/favorites
     @Override
     public Response getFavorites(String id) {
         User user = getUser(id);
@@ -131,15 +132,7 @@ public class UserService extends ICanMapObjects implements IUserService {
 
     @Override
     public User getUser(String id) {
-        long parsedId;
-
-        try {
-            parsedId = Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            return null;
-        }
-
+        long parsedId = Long.parseLong(id);
         return userRepository.get(parsedId);
     }
 
@@ -207,6 +200,14 @@ public class UserService extends ICanMapObjects implements IUserService {
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
         }
 
         return new Response(
@@ -233,7 +234,8 @@ public class UserService extends ICanMapObjects implements IUserService {
         try {
             User updatedUser = this.getObjectMapper().readValue(requestBody, User.class);
 
-            this.getObjectMapper().updateValue(existingUser, updatedUser);
+            long parsedId = Long.parseLong(id);
+            userRepository.update(parsedId, updatedUser);
 
             return new Response(
                     HttpStatus.OK,
@@ -246,6 +248,14 @@ public class UserService extends ICanMapObjects implements IUserService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
                     "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
             );
         }
     }
