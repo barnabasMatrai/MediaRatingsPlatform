@@ -1,180 +1,91 @@
-1. Application Design
-1.1 Architectural Overview
+PROJECT PROTOCOL
 
-The application follows a layered architecture with clear separation of concerns:
+Project setup:
+Tools: IntelliJ IDEA, Maven, Temurin-21 SDK
+Dependencies:
+- com.fasterxml.jackson.core (JSON parsing)
+- commons-io (IO utilities)
+- org.postgresql (PostgreSQL JDBC Driver)
+- junit (unit tests)
+- org.mockito (mocking)
 
-Controller Layer -> Service Layer -> Repository Layer -> Persistence Layer (SQL + JDBC)
+Architecture overview:
 
-Controllers handle HTTP requests and responses.
+Handler -> Service -> Repository -> Database
 
-Repositories encapsulate database access logic.
+When a request comes in, the Handler layer parses the HTTP request and validates the input.
+The request is then forwarded to the Service layer, where the business logic and validation rules are handled.
+The Service layer communicates with the Repository layer, which is responsible for database access using JDBC and SQL.
+The Database layer contains the persistable data (users, media entries, ...)
 
-Domain Models represent core business entities.
+The application uses a UnitOfWork pattern to manage transactions and ensure consistency.
 
-UnitOfWork manages transactions and connection lifecycle.
+Design decisions:
+- Clear separation of concerns between layers
+- Repositories contain only SQL and database logic
+- Business logic is not mixed with HTTP handling
+- PreparedStatements are used to prevent SQL injection
+- Database constraints ensure data integrity
 
-This structure improves maintainability, testability, and scalability.
+SOLID principles applied:
 
-1.2 Core Domain Models
+Single Responsibility Principle (SRP):
+Each class has one responsibility:
+- Handlers handle HTTP requests
+- Services handle business logic
+- Repositories handle database access
 
-Class	Responsibility
+This improves maintainability and readability.
 
-User	Represents application users
-MediaEntry	Represents movies, series, or games
-Rating	Represents a user’s rating of a media entry
-Genre	Genres of media entries
-MediaType	Enum representing media type (movie, series or game)
-UnitOfWork	Transaction and statement management
+Open/Closed Principle (OCP):
+- Filtering and sorting logic was implemented in a way that allows new filters or sorting options to be added without modifying existing code structure.
 
-1.3 Repository Design
+Unit testing strategy:
 
-Each repository:
+- JUnit 5 is used for writing tests
+- Mockito is used to mock repositories
+- No real database connections are used in unit tests
 
-Uses PreparedStatements to prevent SQL injection
+Tests cover:
+- User creation and lookup
+- Media CRUD operations
+- Rating rules (one rating per user)
+- Favorites and recommendations
+- Error handling and edge cases
 
-Manages atomic transactions via UnitOfWork
+Lessons learned:
+- Maven greatly simplifies dependency management
+- SQL aggregation functions (AVG, GROUP BY) reduce application logic complexity
+- Mock-based testing improves test reliability
+- Database constraints prevent many runtime errors
 
-Examples:
+Problems encountered:
 
-MediaRepository
+Handling dependencies:
+Initially, dependencies were stored manually in a libraries folder and had to be downloaded individually.
+Solution: Migrated to Maven and defined dependencies in the pom.xml file.
 
-UserRepository
+Naming conventions:
+Layer and class names changed multiple times during development.
+Solution: Settled on consistent naming conventions for all layers.
 
-RatingRepository
+SQL complexity:
+Some SQL queries became hard to read and debug.
+Solution: Split complex logic into smaller queries and helper methods.
 
-2. Lessons Learned
+Estimated time tracking:
 
-Dynamic SQL construction is safer and more flexible than hardcoding queries
+Setup & project structure: 3 hours
+Database schema design: 4 hours
+Creating models: 1 hour
+Repository implementation: 6 hours
+Recommendation logic: 2 hours
+Unit testing: 2 hours
+Documentation: 1 hour
 
-SQL aggregation (AVG) simplifies business logic
+Total time: 19 hours
 
-Mock-based unit testing prevents brittle database-dependent tests
+Git repository:
 
-Early enforcement of constraints (e.g., unique ratings per user) prevents complex bug fixes later
-
-3. Unit Testing Strategy and Coverage
-3.1 Testing Approach
-
-JUnit 5 for test execution
-
-Mockito for mocking repositories and dependencies
-
-No real database connections in unit tests
-
-Strict verification of interactions
-
-3.2 What Was Tested
-
-Area	Coverage
-User creation & lookup
-Media CRUD operations
-Rating rules (one rating per user)
-Favorites & unfavorites
-Recommendation logic
-Error handling & edge cases
-
-3.3 Mocking Strategy
-
-All repositories mocked using @Mock
-
-Behavior stubbed only when needed
-
-No unnecessary stubbing (avoids UnnecessaryStubbingException)
-
-Verification via verify(...)
-
-4. SOLID Principles Applied
-4.1 Single Responsibility Principle
-
-Principle:
-A class should have only one responsibility.
-
-Example:
-
-MediaRepository only handles database operations related to MediaEntry objects
-
-Business rules are not embedded in controllers
-
-SQL logic is not mixed with HTTP logic
-
-Result: cleaner code, easier refactoring and separation of concerns
-
-4.2 Open/Closed Principle
-
-Principle:
-Software entities should be open for extension, but closed for modification.
-
-Example:
-
-Filtering logic in get(Map<String, String> filters)
-
-New filters can be added without modifying existing logic
-
-Sorting options are extendable
-
-Result: future-proof querying system
-
-5. Problems Encountered and Solutions
-5.1 SQL Aggregation Errors
-
-Problem:
-PostgreSQL error with SELECT DISTINCT and ORDER BY.
-
-Solution:
-Removed DISTINCT and relied on GROUP BY.
-
-5.2 Mockito UnnecessaryStubbingException
-
-Problem:
-Mocks were stubbed but never used.
-
-Solution:
-Removed unused stubs.
-
-5.3 Primitive Types Cannot Be Null
-
-Problem:
-short rating value could not represent “not provided”.
-
-Solution:
-Used conditional update logic and sentinel values instead of nulls.
-
-5.4 Recommendation Query Complexity
-
-Problem:
-Single SQL query became too complex and unreadable.
-
-Solution:
-Split logic into:
-
-Fetch user preferences
-
-Fetch candidate media
-
-Filter by business rules
-
-6. Time Tracking
-
-Task	Time Spent
-Database schema design	3h
-Repository implementation	6h
-Recommendation logic	2h
-Unit testing & mocks	3h
-Debugging SQL & transactions	4h
-Documentation	2h
-
-7. Conclusion
-
-The project demonstrates:
-
-Clean architecture
-
-Correct use of SQL aggregation
-
-Strong unit testing discipline
-
-Application of SOLID principles
-
-Robust error handling
-
-The final system is maintainable, testable, and extensible, meeting both functional and quality requirements.
+GitHub link:
+https://github.com/barnabasMatrai/MediaRatingsPlatform
