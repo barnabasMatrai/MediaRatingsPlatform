@@ -1,173 +1,51 @@
 package service;
 
-import model.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import model.MediaEntry;
+import model.Rating;
 import repository.DataAccessException;
-import repository.repository.IUserRepository;
+import repository.ForbiddenException;
+import repository.repository.IMediaRepository;
 import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class UserService extends ICanMapObjects implements IUserService {
-    private static UserService instance = null;
-    private IUserRepository userRepository;
+import java.util.List;
+import java.util.Map;
 
-    private UserService(IUserRepository userRepository) {
-        this.userRepository = userRepository;
+public class MediaService extends ICanMapObjects implements IMediaService {
+    private static IMediaService instance = null;
+    private IMediaRepository mediaRepository;
+
+    private MediaService(IMediaRepository mediaRepository) {
+        this.mediaRepository = mediaRepository;
     }
 
-    public static UserService getInstance(IUserRepository userRepository) {
+    public static IMediaService getInstance(IMediaRepository mediaRepository) {
         if (instance == null) {
-            instance = new UserService(userRepository);
+            instance = new MediaService(mediaRepository);
         }
         return instance;
     }
 
-    // GET /users/:id/profile
+    // GET /media
     @Override
-    public Response getProfile(String id) {
-        User user = getUser(id);
-
-        if (user == null) {
-            return new Response(
-                    HttpStatus.NOT_FOUND,
-                    ContentType.JSON,
-                    "{ \"message\" : \"User with id " + id + " not found.\" }"
-            );
-        }
-
+    public Response getMediaEntries(Map<String, String> filters) {
         try {
-            String userJSON = this.getObjectMapper().writeValueAsString(user);
+            List<MediaEntry> mediaEntries = mediaRepository.get(filters);
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userJSON
+                    this.getObjectMapper().writeValueAsString(mediaEntries)
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"message\" : \"Internal Server Error\" }"
-            );
-        }
-    }
-
-    // GET /users/:id/ratings
-    @Override
-    public Response getRatings(String id) {
-        User user = getUser(id);
-
-        if (user == null) {
-            return new Response(
-                    HttpStatus.NOT_FOUND,
-                    ContentType.JSON,
-                    "{ \"message\" : \"User with id " + id + " not found.\" }"
-            );
-        }
-
-        try {
-            String userJSON = this.getObjectMapper().writeValueAsString(user.getRatings());
-
-            return new Response(
-                    HttpStatus.OK,
-                    ContentType.JSON,
-                    userJSON
-            );
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"message\" : \"Internal Server Error\" }"
-            );
-        }
-    }
-
-    // GET /users/:id/favorites
-    @Override
-    public Response getFavorites(String id) {
-        User user = getUser(id);
-
-        if (user == null) {
-            return new Response(
-                    HttpStatus.NOT_FOUND,
-                    ContentType.JSON,
-                    "{ \"message\" : \"User with id " + id + " not found.\" }"
-            );
-        }
-
-        try {
-            String userJSON = this.getObjectMapper().writeValueAsString(user.getFavorites());
-
-            return new Response(
-                    HttpStatus.OK,
-                    ContentType.JSON,
-                    userJSON
-            );
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"message\" : \"Internal Server Error\" }"
-            );
-        }
-    }
-
-    @Override
-    public Response getRecommendationsByGenre(String id) {
-        // TODO
-        System.out.println("getRecommendationsByGenre");
-        return null;
-    }
-
-    @Override
-    public Response getRecommendationsByContent(String id) {
-        // TODO
-        System.out.println("getRecommendationsByGenre");
-        return null;
-    }
-
-    @Override
-    public User getUser(String id) {
-        long parsedId = Long.parseLong(id);
-        return userRepository.get(parsedId);
-    }
-
-    // POST /users/register
-    @Override
-    public Response register(String requestBody)
-    {
-        try {
-            User user = this.getObjectMapper().readValue(requestBody, User.class);
-            if (userRepository.get(user.getUsername()) != null) {
-                return new Response(
-                        HttpStatus.BAD_REQUEST,
-                        ContentType.JSON,
-                        "{ message: \"User with username exists already! \" }"
-                );
-            }
-
-            userRepository.add(user);
-
-            return new Response(
-                    HttpStatus.CREATED,
-                    ContentType.JSON,
-                    "{ message: \"Successfully registered user " + user.getUsername() + "\" }"
-            );
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
                     "{ \"message\" : \"Internal Server Error\" }"
             );
         } catch (DataAccessException e) {
-            e.printStackTrace();
-
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,
@@ -176,82 +54,187 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
     }
 
-    // POST /users/login
+    // GET /media/?title=?&genre=?&sortBy=?
     @Override
-    public Response login(String requestBody)
-    {
+    public Response getMediaEntry(String id) {
         try {
-            User user = this.getObjectMapper().readValue(requestBody, User.class);
-            String username = user.getUsername();
-            User existingUser = userRepository.get(username);
-
-            if (existingUser == null || !existingUser.getPassword().equals(user.getPassword())) {
-                return new Response(
-                        HttpStatus.NOT_FOUND,
-                        ContentType.JSON,
-                        "{ \"message\" : \"Invalid credentials!\" }"
-                );
-            }
-
-            return new Response(
-                    HttpStatus.CREATED,
-                    ContentType.JSON,
-                    AuthenticationService.getInstance().generateToken()
-            );
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-
-            return new Response(
-                    HttpStatus.BAD_REQUEST,
-                    ContentType.JSON,
-                    "{ \"message\" : \"" + e.getMessage() + "\" }"
-            );
-        }
-
-        return new Response(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ContentType.JSON,
-                "{ \"message\" : \"Internal Server Error\" }"
-        );
-    }
-
-    // PUT /users/id:/profile
-    @Override
-    public Response updateProfile(String id, String requestBody)
-    {
-        User existingUser = getUser(id);
-
-        if (existingUser == null) {
-            return new Response(
-                    HttpStatus.NOT_FOUND,
-                    ContentType.JSON,
-                    "{ \"message\" : \"User with id " + id + " not found.\" }"
-            );
-        }
-
-        try {
-            User updatedUser = this.getObjectMapper().readValue(requestBody, User.class);
-
             long parsedId = Long.parseLong(id);
-            userRepository.update(parsedId, updatedUser);
+            MediaEntry mediaEntry = mediaRepository.get(parsedId);
 
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    "{ \"message\" : \"User with id " + id + " has been updated.\" }"
+                    this.getObjectMapper().writeValueAsString(mediaEntry)
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
                     "{ \"message\" : \"Internal Server Error\" }"
             );
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
 
+    // POST /media
+    @Override
+    public Response createMedia(String requestBody, String username)
+    {
+        try {
+            MediaEntry mediaEntry = this.getObjectMapper().readValue(requestBody, MediaEntry.class);
+
+            mediaRepository.add(mediaEntry, username);
+
+            return new Response(
+                    HttpStatus.CREATED,
+                    ContentType.JSON,
+                    "{ message: \"Successfully added media " + mediaEntry.getTitle() + "\" }"
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
+
+    // DELETE /media/id:
+    @Override
+    public Response deleteMedia(long mediaEntryId, String username)
+    {
+        try {
+            Long userId = mediaRepository.getUserIdByUsername(username);
+
+            mediaRepository.delete(mediaEntryId, userId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ message: \"Successfully deleted media with index " + mediaEntryId + "\" }"
+            );
+        } catch (ForbiddenException e) {
+            return new Response(
+                    HttpStatus.FORBIDDEN,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
+
+    // PUT /media/id:
+    @Override
+    public Response updateMedia(String requestBody, long mediaEntryId, String username) {
+        try {
+            long userId = mediaRepository.getUserIdByUsername(username);
+
+            MediaEntry mediaEntry = this.getObjectMapper().readValue(requestBody, MediaEntry.class);
+
+            mediaRepository.update(mediaEntry, mediaEntryId, userId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ message: \"Successfully update media with index " + mediaEntryId + "\" }"
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        } catch (ForbiddenException e) {
+            return new Response(
+                    HttpStatus.FORBIDDEN,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
+
+    // POST /media/id:/rate
+    @Override
+    public Response rateMedia(String requestBody, long mediaEntryId, String username) {
+        try {
+            long userId = mediaRepository.getUserIdByUsername(username);
+
+            Rating rating = this.getObjectMapper().readValue(requestBody, Rating.class);
+
+            mediaRepository.rate(rating, mediaEntryId, userId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ message: \"Successfully rated media with index " + mediaEntryId + "\" }"
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
+
+    // POST /media/id:/favorite
+    @Override
+    public Response markAsFavorite(long mediaEntryId, String username) {
+        try {
+            long userId = mediaRepository.getUserIdByUsername(username);
+
+            mediaRepository.favorite(mediaEntryId, userId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ message: \"Successfully marked media with index " + mediaEntryId + " as favorite\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
+
+    // DELETE /media/id:/favorite
+    @Override
+    public Response unmarkAsFavorite(long mediaEntryId, String username) {
+        try {
+            long userId = mediaRepository.getUserIdByUsername(username);
+
+            mediaRepository.unfavorite(mediaEntryId, userId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ message: \"Successfully unmarked media with index " + mediaEntryId + " as favorite\" }"
+            );
+        } catch (DataAccessException e) {
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,

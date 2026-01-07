@@ -1,69 +1,96 @@
 package handler;
 
-import restserver.server.Request;
+import com.sun.net.httpserver.HttpExchange;
+import restserver.http.ContentType;
+import restserver.http.HttpStatus;
 import restserver.server.Response;
-import service.IUserService;
+import service.AuthenticationService;
+import service.IMediaService;
 
 import java.util.List;
+import java.util.Map;
 
 public class MediaHandler extends Handler {
-    private final IUserService userController;
+    private final IMediaService mediaService;
 
-    public MediaHandler(IUserService userController) {
-        this.userController = userController;
+    public MediaHandler(IMediaService mediaService) {
+        this.mediaService = mediaService;
     }
 
     @Override
-    protected Response handleGet(List<String> path, Request request) {
-        if (path.size() < 4) return badRequest();
+    protected Response handleGet(List<String> path, HttpExchange exchange, Map<String, String> params) {
+        if (path.size() < 3) {
+            if (params == null) {
+                return badRequest();
+            }
 
-        String userId = path.get(2);
-        String target = path.get(3);
+            return mediaService.getMediaEntries(params);
+        }
 
-        return switch (target) {
-            case "profile" -> userController.getProfile(userId);
-            case "ratings" -> userController.getRatings(userId);
-            case "favorites" -> userController.getFavorites(userId);
-            case "recommendations" -> handleRecommendations(request, userId);
-            default -> badRequest();
-        };
-    }
-
-    private Response handleRecommendations(Request request, String userId) {
-        String params = request.getParams();
-        return switch (params) {
-            case "type=genre" -> userController.getRecommendationsByGenre(userId);
-            case "type=content" -> userController.getRecommendationsByContent(userId);
-            default -> badRequest();
-        };
+        String id = path.get(2);
+        return mediaService.getMediaEntry(id);
     }
 
     @Override
-    protected Response handlePost(List<String> path, String body) {
-        if (path.size() < 3) return badRequest();
+    protected Response handlePost(List<String> path, HttpExchange exchange, String body) {
+        String username = AuthenticationService.getInstance().getCurrentUser(exchange);
 
-        return switch (path.get(2)) {
-            case "register" -> userController.register(body);
-            case "login" -> userController.login(body);
-            default -> badRequest();
-        };
+        if (username == null) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "User is not logged in, unable to continue with request");
+        }
+
+        if (path.size() == 4) {
+            long mediaEntryId = Long.parseLong(path.get(2));
+            String option = path.get(3);
+
+            switch (option) {
+                case "rate":
+                    return mediaService.rateMedia(body, mediaEntryId, username);
+                case "favorite":
+                    return mediaService.markAsFavorite(mediaEntryId, username);
+            }
+        }
+
+        if (path.size() < 3) {
+            return mediaService.createMedia(body, username);
+        }
+
+        return badRequest();
     }
 
     @Override
-    protected Response handlePut(List<String> path, String body) {
-        if (path.size() < 4) return badRequest();
+    protected Response handlePut(List<String> path, HttpExchange exchange, String body) {
+        String username = AuthenticationService.getInstance().getCurrentUser(exchange);
+        if (username == null) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "User is not logged in, unable to continue with request");
+        }
+        if (path.size() < 4) {
+            long mediaEntryId = Long.parseLong(path.get(2));
+            return mediaService.updateMedia(body, mediaEntryId, username);
+        }
 
-        String userId = path.get(2);
-        String target = path.get(3);
-
-        return switch (target) {
-            case "profile" -> userController.updateProfile(userId, body);
-            default -> badRequest();
-        };
+        return badRequest();
     }
 
     @Override
-    protected Response handleDelete(List<String> path) {
+    protected Response handleDelete(List<String> path, HttpExchange exchange) {
+        String username = AuthenticationService.getInstance().getCurrentUser(exchange);
+
+        if (username == null) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "User is not logged in, unable to continue with request");
+        }
+
+        if (path.size() == 3) {
+            return mediaService.deleteMedia(Integer.parseInt(path.get(2)), username);
+        } else if (path.size() == 4) {
+            long mediaEntryId = Long.parseLong(path.get(2));
+            String option = path.get(3);
+
+            switch (option) {
+                case "favorite":
+                    return mediaService.unmarkAsFavorite(mediaEntryId, username);
+            }
+        }
         return badRequest(); // placeholder
     }
 }
