@@ -1,0 +1,180 @@
+1. Application Design
+1.1 Architectural Overview
+
+The application follows a layered architecture with clear separation of concerns:
+
+Controller Layer -> Service Layer -> Repository Layer -> Persistence Layer (SQL + JDBC)
+
+Controllers handle HTTP requests and responses.
+
+Repositories encapsulate database access logic.
+
+Domain Models represent core business entities.
+
+UnitOfWork manages transactions and connection lifecycle.
+
+This structure improves maintainability, testability, and scalability.
+
+1.2 Core Domain Models
+
+Class	Responsibility
+
+User	Represents application users
+MediaEntry	Represents movies, series, or games
+Rating	Represents a user’s rating of a media entry
+Genre	Genres of media entries
+MediaType	Enum representing media type (movie, series or game)
+UnitOfWork	Transaction and statement management
+
+1.3 Repository Design
+
+Each repository:
+
+Uses PreparedStatements to prevent SQL injection
+
+Manages atomic transactions via UnitOfWork
+
+Examples:
+
+MediaRepository
+
+UserRepository
+
+RatingRepository
+
+2. Lessons Learned
+
+Dynamic SQL construction is safer and more flexible than hardcoding queries
+
+SQL aggregation (AVG) simplifies business logic
+
+Mock-based unit testing prevents brittle database-dependent tests
+
+Early enforcement of constraints (e.g., unique ratings per user) prevents complex bug fixes later
+
+3. Unit Testing Strategy and Coverage
+3.1 Testing Approach
+
+JUnit 5 for test execution
+
+Mockito for mocking repositories and dependencies
+
+No real database connections in unit tests
+
+Strict verification of interactions
+
+3.2 What Was Tested
+
+Area	Coverage
+User creation & lookup
+Media CRUD operations
+Rating rules (one rating per user)
+Favorites & unfavorites
+Recommendation logic
+Error handling & edge cases
+
+3.3 Mocking Strategy
+
+All repositories mocked using @Mock
+
+Behavior stubbed only when needed
+
+No unnecessary stubbing (avoids UnnecessaryStubbingException)
+
+Verification via verify(...)
+
+4. SOLID Principles Applied
+4.1 Single Responsibility Principle
+
+Principle:
+A class should have only one responsibility.
+
+Example:
+
+MediaRepository only handles database operations related to MediaEntry objects
+
+Business rules are not embedded in controllers
+
+SQL logic is not mixed with HTTP logic
+
+Result: cleaner code, easier refactoring and separation of concerns
+
+4.2 Open/Closed Principle
+
+Principle:
+Software entities should be open for extension, but closed for modification.
+
+Example:
+
+Filtering logic in get(Map<String, String> filters)
+
+New filters can be added without modifying existing logic
+
+Sorting options are extendable
+
+Result: future-proof querying system
+
+5. Problems Encountered and Solutions
+5.1 SQL Aggregation Errors
+
+Problem:
+PostgreSQL error with SELECT DISTINCT and ORDER BY.
+
+Solution:
+Removed DISTINCT and relied on GROUP BY.
+
+5.2 Mockito UnnecessaryStubbingException
+
+Problem:
+Mocks were stubbed but never used.
+
+Solution:
+Removed unused stubs.
+
+5.3 Primitive Types Cannot Be Null
+
+Problem:
+short rating value could not represent “not provided”.
+
+Solution:
+Used conditional update logic and sentinel values instead of nulls.
+
+5.4 Recommendation Query Complexity
+
+Problem:
+Single SQL query became too complex and unreadable.
+
+Solution:
+Split logic into:
+
+Fetch user preferences
+
+Fetch candidate media
+
+Filter by business rules
+
+6. Time Tracking
+
+Task	Time Spent
+Database schema design	3h
+Repository implementation	6h
+Recommendation logic	2h
+Unit testing & mocks	3h
+Debugging SQL & transactions	4h
+Documentation	2h
+
+7. Conclusion
+
+The project demonstrates:
+
+Clean architecture
+
+Correct use of SQL aggregation
+
+Strong unit testing discipline
+
+Application of SOLID principles
+
+Robust error handling
+
+The final system is maintainable, testable, and extensible, meeting both functional and quality requirements.
