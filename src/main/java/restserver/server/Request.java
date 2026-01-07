@@ -2,13 +2,15 @@ package restserver.server;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Request {
     private String urlContent;
     private String pathname;
     private List<String> pathParts;
-    private String params;
+    private Map<String, String> params;
 
     public Request(URI url) {
         this.setUrlContent(url.toString());
@@ -43,12 +45,21 @@ public class Request {
         }
 
     }
-    public String getParams() {
+    public Map<String, String> getParams() {
         return params;
     }
 
     private void setParams(String params) {
-        this.params = params;
+        if (params != null) {
+            String[] paramsOfQuery = params.split("&");
+            Map<String, String> valuesByKeys = new HashMap<>();
+            for (String param : paramsOfQuery) {
+                String[] paramValues = param.split("=");
+                valuesByKeys.put(paramValues[0], paramValues[1]);
+            }
+
+            this.params = valuesByKeys;
+        }
     }
 
     public List<String> getPathParts() {
