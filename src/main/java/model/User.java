@@ -16,9 +16,12 @@ public class User implements IModel {
     private Set<Rating> likedRatings;
 
     public User() {};
-    public User(String username, String password, String email, String firstName, String lastName) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+    public User(String username, String password, String email, String firstName, String lastName) {
+        this(username, password);
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;

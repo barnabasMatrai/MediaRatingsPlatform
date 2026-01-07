@@ -1,4 +1,7 @@
 package model;
 
-public class MediaType {
+public enum MediaType {
+    movie,
+    series,
+    game
 }
