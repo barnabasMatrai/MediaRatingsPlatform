@@ -13,4 +13,5 @@ public interface IUserService {
     Response register(String requestBody);
     Response login(String requestBody);
     Response updateProfile(String id, String requestBody);
+    Response getLeaderboard();
 }

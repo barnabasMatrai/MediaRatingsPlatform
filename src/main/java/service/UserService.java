@@ -1,5 +1,6 @@
 package service;
 
+import model.MediaEntry;
 import model.User;
 import repository.DataAccessException;
 import repository.repository.IUserRepository;
@@ -7,6 +8,9 @@ import restserver.http.ContentType;
 import restserver.http.HttpStatus;
 import restserver.server.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.util.List;
+import java.util.Map;
 
 public class UserService extends ICanMapObjects implements IUserService {
     private static UserService instance = null;
@@ -45,7 +49,6 @@ public class UserService extends ICanMapObjects implements IUserService {
                     userJSON
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
@@ -76,7 +79,6 @@ public class UserService extends ICanMapObjects implements IUserService {
                     userJSON
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
@@ -107,7 +109,6 @@ public class UserService extends ICanMapObjects implements IUserService {
                     userJSON
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
@@ -116,18 +117,79 @@ public class UserService extends ICanMapObjects implements IUserService {
         }
     }
 
+    // GET /users/id:/recommendations/?type=genre
     @Override
-    public Response getRecommendationsByGenre(String id) {
-        // TODO
-        System.out.println("getRecommendationsByGenre");
-        return null;
+    public Response getRecommendationsByGenre(String id)
+    {
+        User existingUser = getUser(id);
+
+        if (existingUser == null) {
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.JSON,
+                    "{ \"message\" : \"User with id " + id + " not found.\" }"
+            );
+        }
+
+        try {
+            long parsedId = Long.parseLong(id);
+            List<MediaEntry> recommendations = userRepository.getRecommendationsByGenre(parsedId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    getObjectMapper().writeValueAsString(recommendations)
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
     }
 
+    // GET /users/id:/recommendations/?type=content
     @Override
     public Response getRecommendationsByContent(String id) {
-        // TODO
-        System.out.println("getRecommendationsByGenre");
-        return null;
+        User existingUser = getUser(id);
+
+        if (existingUser == null) {
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.JSON,
+                    "{ \"message\" : \"User with id " + id + " not found.\" }"
+            );
+        }
+
+        try {
+            long parsedId = Long.parseLong(id);
+            List<MediaEntry> recommendations = userRepository.getRecommendationsByContent(parsedId);
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    getObjectMapper().writeValueAsString(recommendations)
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
     }
 
     @Override
@@ -158,16 +220,12 @@ public class UserService extends ICanMapObjects implements IUserService {
                     "{ message: \"Successfully registered user " + user.getUsername() + "\" }"
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
                     "{ \"message\" : \"Internal Server Error\" }"
             );
         } catch (DataAccessException e) {
-            e.printStackTrace();
-
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,
@@ -194,27 +252,23 @@ public class UserService extends ICanMapObjects implements IUserService {
             }
 
             return new Response(
-                    HttpStatus.CREATED,
+                    HttpStatus.OK,
                     ContentType.JSON,
-                    AuthenticationService.getInstance().generateToken()
+                    AuthenticationService.getInstance().generateToken(username)
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
         } catch (DataAccessException e) {
-            e.printStackTrace();
-
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,
                     "{ \"message\" : \"" + e.getMessage() + "\" }"
             );
         }
-
-        return new Response(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ContentType.JSON,
-                "{ \"message\" : \"Internal Server Error\" }"
-        );
     }
 
     // PUT /users/id:/profile
@@ -243,15 +297,38 @@ public class UserService extends ICanMapObjects implements IUserService {
                     "{ \"message\" : \"User with id " + id + " has been updated.\" }"
             );
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.JSON,
                     "{ \"message\" : \"Internal Server Error\" }"
             );
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"message\" : \"" + e.getMessage() + "\" }"
+            );
+        }
+    }
 
+    // GET /users/leaderboard
+    @Override
+    public Response getLeaderboard() {
+        try {
+            Map<String, Double> avgRatingsByUsers = userRepository.getLeaderboard();
+
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    getObjectMapper().writeValueAsString(getObjectMapper().writeValueAsString(avgRatingsByUsers))
+            );
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"message\" : \"Internal Server Error\" }"
+            );
+        } catch (DataAccessException e) {
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,

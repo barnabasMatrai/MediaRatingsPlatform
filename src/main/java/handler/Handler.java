@@ -12,6 +12,7 @@ import restserver.server.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 public abstract class Handler implements HttpHandler {
     @Override
@@ -29,28 +30,29 @@ public abstract class Handler implements HttpHandler {
         }
     }
 
-    private Response routeRequest(String method, List<String> path, HttpExchange exchange, Request request) throws IOException {
+    protected Response routeRequest(String method, List<String> path, HttpExchange exchange, Request request) throws IOException {
         String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
+        Map<String, String> params = request.getParams();
 
         if (method.equals(Method.GET.name())) {
-            return handleGet(path, request);
+            return handleGet(path, exchange, params);
         } else if (method.equals(Method.POST.name())) {
-            return handlePost(path, body);
+            return handlePost(path, exchange, body);
         } else if (method.equals(Method.PUT.name())) {
-            return handlePut(path, body);
+            return handlePut(path, exchange, body);
         }  else if (method.equals(Method.DELETE.name())) {
-            return handleDelete(path);
+            return handleDelete(path, exchange);
         }
 
-        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
+        return badRequest();
     }
 
     protected Response badRequest() {
-        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "[]");
+        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request");
     }
 
-    protected abstract Response handleGet(List<String> path, Request request);
-    protected abstract Response handlePost(List<String> path, String body);
-    protected abstract Response handlePut(List<String> path, String body);
-    protected abstract Response handleDelete(List<String> path);
+    protected abstract Response handleGet(List<String> path, HttpExchange exchange, Map<String, String> params);
+    protected abstract Response handlePost(List<String> path, HttpExchange exchange, String body);
+    protected abstract Response handlePut(List<String> path, HttpExchange exchange, String body);
+    protected abstract Response handleDelete(List<String> path, HttpExchange exchange);
 }
